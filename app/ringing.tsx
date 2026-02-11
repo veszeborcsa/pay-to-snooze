@@ -22,7 +22,7 @@ export default function RingingScreen() {
     const alarmId = (params.alarmId as string) || 'demo';
     const label = (params.label as string) || 'Wake Up!';
     const snoozePrice = parseFloat(params.snoozePrice as string) || 1;
-    const snoozeDuration = parseInt(params.snoozeDuration as string) || 9;
+    const snoozeDuration = parseInt(params.snoozeDuration as string) || 1;
 
     const pulseAnim = useRef(new Animated.Value(1)).current;
     const glowAnim = useRef(new Animated.Value(0)).current;

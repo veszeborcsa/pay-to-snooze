@@ -1,9 +1,31 @@
 // Settings screen
+import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { useSettings } from '../hooks/useAlarms';
 
+const DURATION_PRESETS = [1, 5, 10, 15];
+
 export default function SettingsScreen() {
     const { settings, updateSettings } = useSettings();
+    const [showCustomDuration, setShowCustomDuration] = useState(false);
+    const [customDuration, setCustomDuration] = useState('');
+
+    const selectPresetDuration = (min: number) => {
+        updateSettings({ defaultSnoozeDuration: min });
+        setShowCustomDuration(false);
+    };
+
+    const selectCustomDuration = () => {
+        setShowCustomDuration(true);
+    };
+
+    const handleCustomDurationChange = (text: string) => {
+        setCustomDuration(text);
+        const val = parseInt(text);
+        if (!isNaN(val) && val > 0) {
+            updateSettings({ defaultSnoozeDuration: val });
+        }
+    };
 
     if (!settings) {
         return (
@@ -51,24 +73,46 @@ export default function SettingsScreen() {
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Default Snooze Duration</Text>
                 <View style={styles.durationContainer}>
-                    {[5, 9, 10, 15].map((min) => (
+                    {DURATION_PRESETS.map((min) => (
                         <TouchableOpacity
                             key={min}
                             style={[
                                 styles.durationButton,
-                                settings.defaultSnoozeDuration === min && styles.durationButtonActive
+                                settings.defaultSnoozeDuration === min && !showCustomDuration && styles.durationButtonActive
                             ]}
-                            onPress={() => updateSettings({ defaultSnoozeDuration: min })}
+                            onPress={() => selectPresetDuration(min)}
                         >
                             <Text style={[
                                 styles.durationText,
-                                settings.defaultSnoozeDuration === min && styles.durationTextActive
+                                settings.defaultSnoozeDuration === min && !showCustomDuration && styles.durationTextActive
                             ]}>
                                 {min} min
                             </Text>
                         </TouchableOpacity>
                     ))}
+                    <TouchableOpacity
+                        style={[styles.durationButton, showCustomDuration && styles.durationButtonActive]}
+                        onPress={selectCustomDuration}
+                    >
+                        <Text style={[styles.durationText, showCustomDuration && styles.durationTextActive]}>
+                            Other
+                        </Text>
+                    </TouchableOpacity>
                 </View>
+                {showCustomDuration && (
+                    <View style={styles.customDurationContainer}>
+                        <TextInput
+                            style={styles.customDurationInput}
+                            value={customDuration}
+                            onChangeText={handleCustomDurationChange}
+                            keyboardType="number-pad"
+                            placeholder="Enter minutes"
+                            placeholderTextColor="#666"
+                            autoFocus
+                        />
+                        <Text style={styles.customDurationLabel}>minutes</Text>
+                    </View>
+                )}
             </View>
 
             {/* About */}
@@ -174,9 +218,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 8,
+        flexWrap: 'wrap',
     },
     durationButton: {
         flex: 1,
+        minWidth: 50,
         paddingVertical: 14,
         borderRadius: 12,
         backgroundColor: '#1a1a2e',
@@ -195,6 +241,27 @@ const styles = StyleSheet.create({
     },
     durationTextActive: {
         color: '#fff',
+    },
+    customDurationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 12,
+        gap: 8,
+    },
+    customDurationInput: {
+        flex: 1,
+        backgroundColor: '#1a1a2e',
+        borderRadius: 12,
+        padding: 14,
+        fontSize: 18,
+        color: '#fff',
+        borderWidth: 1,
+        borderColor: '#4a9f7f',
+        textAlign: 'center',
+    },
+    customDurationLabel: {
+        fontSize: 16,
+        color: '#888',
     },
     aboutSection: {
         alignItems: 'center',
