@@ -1,12 +1,22 @@
-// Settings screen
+// Settings screen - app configuration
 import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSettings } from '../hooks/useAlarms';
+import { useTranslation } from '../hooks/useTranslation';
 
 const DURATION_PRESETS = [1, 5, 10, 15];
+const LANGUAGES = [
+    { code: 'en', label: 'English' },
+    { code: 'hu', label: 'Magyar' },
+    { code: 'es', label: 'Español' },
+    { code: 'de', label: 'Deutsch' },
+];
 
 export default function SettingsScreen() {
+    const router = useRouter();
     const { settings, updateSettings } = useSettings();
+    const { t, dayNames } = useTranslation();
     const [showCustomDuration, setShowCustomDuration] = useState(false);
     const [customDuration, setCustomDuration] = useState('');
 
@@ -30,29 +40,67 @@ export default function SettingsScreen() {
     if (!settings) {
         return (
             <View style={styles.container}>
-                <Text style={styles.loadingText}>Loading...</Text>
+                <Text style={styles.loadingText}>{t.loading}</Text>
             </View>
         );
     }
 
+    const selectedLanguage = settings.language || 'en';
+
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-            {/* Stats */}
-            <View style={styles.statsCard}>
-                <Text style={styles.statsEmoji}>💸</Text>
-                <Text style={styles.statsTitle}>Total Spent on Snoozing</Text>
-                <Text style={styles.statsAmount}>${settings.totalSpentOnSnoozing.toFixed(2)}</Text>
-                <Text style={styles.statsSubtext}>
-                    {settings.totalSpentOnSnoozing > 10
-                        ? "That's a lot of 💤! Try waking up on time!"
-                        : "Great job staying disciplined!"}
-                </Text>
+            {/* Language */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>{t.language}</Text>
+                <View style={styles.languageContainer}>
+                    {LANGUAGES.map((lang) => (
+                        <TouchableOpacity
+                            key={lang.code}
+                            style={[
+                                styles.languageButton,
+                                selectedLanguage === lang.code && styles.languageButtonActive
+                            ]}
+                            onPress={() => updateSettings({ language: lang.code })}
+                        >
+                            <Text style={[
+                                styles.languageText,
+                                selectedLanguage === lang.code && styles.languageTextActive
+                            ]}>
+                                {lang.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+
+            {/* Start Day of Week */}
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>{t.weekStartsOn}</Text>
+                <View style={styles.languageContainer}>
+                    {dayNames.map((day, index) => (
+                        <TouchableOpacity
+                            key={day}
+                            style={[
+                                styles.startDayButton,
+                                settings.startDayOfWeek === index && styles.startDayButtonActive
+                            ]}
+                            onPress={() => updateSettings({ startDayOfWeek: index })}
+                        >
+                            <Text style={[
+                                styles.startDayText,
+                                settings.startDayOfWeek === index && styles.startDayTextActive
+                            ]}>
+                                {day}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
             </View>
 
             {/* Default Snooze Price */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Default Snooze Price</Text>
-                <Text style={styles.sectionSubtitle}>New alarms will use this price</Text>
+                <Text style={styles.sectionTitle}>{t.defaultSnoozePrice}</Text>
+                <Text style={styles.sectionSubtitle}>{t.defaultSnoozePriceSubtitle}</Text>
                 <View style={styles.priceContainer}>
                     <Text style={styles.currencySign}>$</Text>
                     <TextInput
@@ -71,7 +119,7 @@ export default function SettingsScreen() {
 
             {/* Default Snooze Duration */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Default Snooze Duration</Text>
+                <Text style={styles.sectionTitle}>{t.defaultSnoozeDuration}</Text>
                 <View style={styles.durationContainer}>
                     {DURATION_PRESETS.map((min) => (
                         <TouchableOpacity
@@ -86,7 +134,7 @@ export default function SettingsScreen() {
                                 styles.durationText,
                                 settings.defaultSnoozeDuration === min && !showCustomDuration && styles.durationTextActive
                             ]}>
-                                {min} min
+                                {min} {t.min}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -95,7 +143,7 @@ export default function SettingsScreen() {
                         onPress={selectCustomDuration}
                     >
                         <Text style={[styles.durationText, showCustomDuration && styles.durationTextActive]}>
-                            Other
+                            {t.other}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -106,32 +154,14 @@ export default function SettingsScreen() {
                             value={customDuration}
                             onChangeText={handleCustomDurationChange}
                             keyboardType="number-pad"
-                            placeholder="Enter minutes"
+                            placeholder={t.enterMinutes}
                             placeholderTextColor="#666"
                             autoFocus
                         />
-                        <Text style={styles.customDurationLabel}>minutes</Text>
+                        <Text style={styles.customDurationLabel}>{t.minutes}</Text>
                     </View>
                 )}
             </View>
-
-            {/* About */}
-            <View style={styles.aboutSection}>
-                <Text style={styles.aboutTitle}>PayToSnooze</Text>
-                <Text style={styles.aboutText}>
-                    The alarm clock that makes you pay to snooze.{'\n'}
-                    No more "just 5 more minutes"!
-                </Text>
-                <Text style={styles.versionText}>Version 1.0.0</Text>
-            </View>
-
-            {/* Reset Stats */}
-            <TouchableOpacity
-                style={styles.resetButton}
-                onPress={() => updateSettings({ totalSpentOnSnoozing: 0 })}
-            >
-                <Text style={styles.resetButtonText}>Reset Statistics</Text>
-            </TouchableOpacity>
         </ScrollView>
     );
 }
@@ -151,34 +181,49 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 40,
     },
-    statsCard: {
-        backgroundColor: '#1a1a2e',
-        borderRadius: 20,
-        padding: 24,
+    profileLink: {
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 24,
+        justifyContent: 'space-between',
+        backgroundColor: '#1a1a2e',
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 28,
         borderWidth: 1,
-        borderColor: '#e74c3c',
+        borderColor: '#2a2a4e',
     },
-    statsEmoji: {
-        fontSize: 48,
-        marginBottom: 12,
+    profileLinkLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
     },
-    statsTitle: {
-        fontSize: 14,
+    profileAvatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#16213e',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#4a9f7f',
+    },
+    profileAvatarEmoji: {
+        fontSize: 24,
+    },
+    profileName: {
+        fontSize: 17,
+        fontWeight: '600',
+        color: '#fff',
+    },
+    profileSubtext: {
+        fontSize: 13,
         color: '#888',
-        marginBottom: 8,
+        marginTop: 2,
     },
-    statsAmount: {
-        fontSize: 48,
-        fontWeight: 'bold',
-        color: '#e74c3c',
-    },
-    statsSubtext: {
-        fontSize: 14,
-        color: '#666',
-        textAlign: 'center',
-        marginTop: 12,
+    profileArrow: {
+        fontSize: 28,
+        color: '#4a9f7f',
+        fontWeight: '300',
     },
     section: {
         marginBottom: 24,
@@ -193,6 +238,56 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#888',
         marginBottom: 12,
+    },
+    languageContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 8,
+    },
+    languageButton: {
+        flex: 1,
+        minWidth: 70,
+        paddingVertical: 14,
+        borderRadius: 12,
+        backgroundColor: '#1a1a2e',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#2a2a4e',
+    },
+    languageButtonActive: {
+        backgroundColor: '#4a9f7f',
+        borderColor: '#4a9f7f',
+    },
+    languageText: {
+        fontSize: 14,
+        color: '#888',
+        fontWeight: '600',
+    },
+    languageTextActive: {
+        color: '#fff',
+    },
+    startDayButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#1a1a2e',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#2a2a4e',
+    },
+    startDayButtonActive: {
+        backgroundColor: '#4a9f7f',
+        borderColor: '#4a9f7f',
+    },
+    startDayText: {
+        fontSize: 11,
+        color: '#888',
+        fontWeight: '600',
+    },
+    startDayTextActive: {
+        color: '#fff',
     },
     priceContainer: {
         flexDirection: 'row',
@@ -219,6 +314,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         gap: 8,
         flexWrap: 'wrap',
+        marginTop: 8,
     },
     durationButton: {
         flex: 1,
@@ -261,41 +357,6 @@ const styles = StyleSheet.create({
     },
     customDurationLabel: {
         fontSize: 16,
-        color: '#888',
-    },
-    aboutSection: {
-        alignItems: 'center',
-        paddingVertical: 32,
-        borderTopWidth: 1,
-        borderTopColor: '#2a2a4e',
-        marginTop: 24,
-    },
-    aboutTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#4a9f7f',
-        marginBottom: 8,
-    },
-    aboutText: {
-        fontSize: 14,
-        color: '#888',
-        textAlign: 'center',
-        lineHeight: 22,
-    },
-    versionText: {
-        fontSize: 12,
-        color: '#555',
-        marginTop: 16,
-    },
-    resetButton: {
-        backgroundColor: '#2a2a4e',
-        borderRadius: 12,
-        padding: 16,
-        alignItems: 'center',
-        marginTop: 16,
-    },
-    resetButtonText: {
-        fontSize: 14,
         color: '#888',
     },
 });

@@ -8,10 +8,13 @@ import {
     Vibration,
     Animated,
     Dimensions,
+    Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { scheduleSnoozeNotification } from '../services/notifications';
 import { addSnoozeSpending } from '../store/alarmStore';
+import { scheduleWebSnooze } from '../hooks/useAlarmChecker';
+import { useTranslation } from '../hooks/useTranslation';
 
 const { width } = Dimensions.get('window');
 
@@ -23,6 +26,7 @@ export default function RingingScreen() {
     const label = (params.label as string) || 'Wake Up!';
     const snoozePrice = parseFloat(params.snoozePrice as string) || 1;
     const snoozeDuration = parseInt(params.snoozeDuration as string) || 1;
+    const { t } = useTranslation();
 
     const pulseAnim = useRef(new Animated.Value(1)).current;
     const glowAnim = useRef(new Animated.Value(0)).current;
@@ -90,8 +94,13 @@ export default function RingingScreen() {
         // For now, simulate payment success and track spending
         await addSnoozeSpending(snoozePrice);
 
-        // Schedule snooze notification
-        await scheduleSnoozeNotification(alarmId, snoozeDuration, snoozePrice, label);
+        if (Platform.OS === 'web') {
+            // Use web snooze queue
+            scheduleWebSnooze(alarmId, snoozeDuration, snoozePrice, label);
+        } else {
+            // Use native notification
+            await scheduleSnoozeNotification(alarmId, snoozeDuration, snoozePrice, label);
+        }
 
         stopAlarm();
         router.back();
@@ -131,14 +140,14 @@ export default function RingingScreen() {
                     {/* Snooze Button */}
                     <TouchableOpacity style={styles.snoozeButton} onPress={handleSnooze}>
                         <Text style={styles.snoozePrice}>${snoozePrice.toFixed(2)}</Text>
-                        <Text style={styles.snoozeText}>Snooze {snoozeDuration} min</Text>
-                        <Text style={styles.snoozeSubtext}>💳 Pay to snooze</Text>
+                        <Text style={styles.snoozeText}>{t.snoozeMin.replace('{0}', String(snoozeDuration))}</Text>
+                        <Text style={styles.snoozeSubtext}>{t.payToSnooze}</Text>
                     </TouchableOpacity>
 
                     {/* Dismiss Button */}
                     <TouchableOpacity style={styles.dismissButton} onPress={handleDismiss}>
-                        <Text style={styles.dismissText}>I'm Awake!</Text>
-                        <Text style={styles.dismissSubtext}>Free</Text>
+                        <Text style={styles.dismissText}>{t.imAwake}</Text>
+                        <Text style={styles.dismissSubtext}>{t.free}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

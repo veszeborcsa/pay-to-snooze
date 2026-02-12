@@ -3,14 +3,15 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { useAlarms } from '../hooks/useAlarms';
 import { Alarm } from '../store/alarmStore';
+import { useTranslation } from '../hooks/useTranslation';
 
-const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-
-function AlarmCard({ alarm, onToggle, onPress, onDelete }: {
+function AlarmCard({ alarm, onToggle, onPress, onDelete, dayNames, t }: {
     alarm: Alarm;
     onToggle: () => void;
     onPress: () => void;
     onDelete: () => void;
+    dayNames: string[];
+    t: Record<string, string>;
 }) {
     const handleDelete = () => {
         if (Platform.OS === 'web') {
@@ -42,11 +43,11 @@ function AlarmCard({ alarm, onToggle, onPress, onDelete }: {
                     {alarm.time}
                 </Text>
                 <Text style={[styles.alarmLabel, !alarm.enabled && styles.textDisabled]}>
-                    {alarm.label || 'Alarm'}
+                    {alarm.label || t.label}
                 </Text>
                 <View style={styles.repeatDays}>
                     {alarm.repeatDays.length > 0 ? (
-                        DAYS.map((day, index) => (
+                        dayNames.map((day, index) => (
                             <Text
                                 key={day}
                                 style={[
@@ -60,7 +61,7 @@ function AlarmCard({ alarm, onToggle, onPress, onDelete }: {
                         ))
                     ) : (
                         <Text style={[styles.repeatText, !alarm.enabled && styles.textDisabled]}>
-                            One time
+                            {t.oneTime}
                         </Text>
                     )}
                 </View>
@@ -70,7 +71,7 @@ function AlarmCard({ alarm, onToggle, onPress, onDelete }: {
                     ${alarm.snoozePrice.toFixed(2)}
                 </Text>
                 <Text style={[styles.snoozePriceLabel, !alarm.enabled && styles.textDisabled]}>
-                    to snooze
+                    {t.toSnooze}
                 </Text>
                 <Switch
                     value={alarm.enabled}
@@ -86,6 +87,7 @@ function AlarmCard({ alarm, onToggle, onPress, onDelete }: {
 export default function HomeScreen() {
     const router = useRouter();
     const { alarms, loading, toggleAlarm, removeAlarm, refreshAlarms } = useAlarms();
+    const { t, dayNames } = useTranslation();
 
     useFocusEffect(
         useCallback(() => {
@@ -104,9 +106,9 @@ export default function HomeScreen() {
             {alarms.length === 0 && !loading ? (
                 <View style={styles.emptyState}>
                     <Text style={styles.emptyIcon}>⏰</Text>
-                    <Text style={styles.emptyTitle}>No Alarms Yet</Text>
+                    <Text style={styles.emptyTitle}>{t.noAlarmsYet}</Text>
                     <Text style={styles.emptySubtitle}>
-                        Tap + to create your first pay-to-snooze alarm
+                        {t.noAlarmsSubtitle}
                     </Text>
                 </View>
             ) : (
@@ -120,6 +122,8 @@ export default function HomeScreen() {
                             onToggle={() => toggleAlarm(item.id)}
                             onPress={() => router.push(`/edit/${item.id}`)}
                             onDelete={() => removeAlarm(item.id)}
+                            dayNames={dayNames}
+                            t={t}
                         />
                     )}
                 />
@@ -130,13 +134,6 @@ export default function HomeScreen() {
                 onPress={() => router.push('/create')}
             >
                 <Text style={styles.fabIcon}>+</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-                style={styles.settingsButton}
-                onPress={() => router.push('/settings')}
-            >
-                <Text style={styles.settingsIcon}>⚙️</Text>
             </TouchableOpacity>
         </View>
     );
@@ -274,8 +271,8 @@ const styles = StyleSheet.create({
     },
     settingsButton: {
         position: 'absolute',
-        bottom: 24,
-        left: 24,
+        top: 12,
+        right: 16,
         width: 48,
         height: 48,
         borderRadius: 24,

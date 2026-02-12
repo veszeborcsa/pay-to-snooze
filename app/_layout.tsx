@@ -1,18 +1,22 @@
 // Root layout - configures expo-router
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { TouchableOpacity, Text, View } from 'react-native';
 import { requestNotificationPermissions } from '../services/notifications';
 import { useAlarmChecker } from '../hooks/useAlarmChecker';
+import { useTranslation } from '../hooks/useTranslation';
+import { SettingsProvider } from '../context/SettingsContext';
 
-export default function RootLayout() {
+function InnerLayout() {
+  const router = useRouter();
   useEffect(() => {
-    // Request notification permissions on app start
     requestNotificationPermissions();
   }, []);
 
-  // Check alarms periodically on web (no-op on native)
   useAlarmChecker();
+
+  const { t } = useTranslation();
 
   return (
     <>
@@ -34,20 +38,36 @@ export default function RootLayout() {
         <Stack.Screen
           name="index"
           options={{
-            title: 'PayToSnooze',
+            title: t.appTitle,
+            headerRight: () => (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <TouchableOpacity
+                  onPress={() => router.push('/profile')}
+                  style={{ padding: 8 }}
+                >
+                  <Text style={{ fontSize: 22 }}>😴</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push('/settings')}
+                  style={{ padding: 8, marginRight: 4 }}
+                >
+                  <Text style={{ fontSize: 22 }}>⚙️</Text>
+                </TouchableOpacity>
+              </View>
+            ),
           }}
         />
         <Stack.Screen
           name="create"
           options={{
-            title: 'New Alarm',
+            title: t.createAlarm,
             presentation: 'modal',
           }}
         />
         <Stack.Screen
           name="edit"
           options={{
-            title: 'Edit Alarm',
+            title: t.editAlarm,
             presentation: 'modal',
           }}
         />
@@ -63,10 +83,24 @@ export default function RootLayout() {
         <Stack.Screen
           name="settings"
           options={{
-            title: 'Settings',
+            title: t.settings,
+          }}
+        />
+        <Stack.Screen
+          name="profile"
+          options={{
+            title: t.profile,
           }}
         />
       </Stack>
     </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <SettingsProvider>
+      <InnerLayout />
+    </SettingsProvider>
   );
 }

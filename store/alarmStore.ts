@@ -21,13 +21,17 @@ export interface Settings {
   defaultSnoozeDuration: number;
   defaultSound: string;
   totalSpentOnSnoozing: number;
+  language: string;
+  startDayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
 }
 
 const defaultSettings: Settings = {
   defaultSnoozePrice: 1,
-  defaultSnoozeDuration: 9,
+  defaultSnoozeDuration: 1,
   defaultSound: 'default',
   totalSpentOnSnoozing: 0,
+  language: 'en',
+  startDayOfWeek: 0,
 };
 
 // Get all alarms

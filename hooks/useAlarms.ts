@@ -82,30 +82,5 @@ export function useAlarms() {
     };
 }
 
-export function useSettings() {
-    const [settings, setSettings] = useState<Settings | null>(null);
-    const [loading, setLoading] = useState(true);
+export { useSettingsContext as useSettings } from '../context/SettingsContext';
 
-    const loadSettings = useCallback(async () => {
-        setLoading(true);
-        const data = await getSettings();
-        setSettings(data);
-        setLoading(false);
-    }, []);
-
-    useEffect(() => {
-        loadSettings();
-    }, [loadSettings]);
-
-    const updateSettings = useCallback(async (updates: Partial<Settings>) => {
-        await saveSettings(updates);
-        await loadSettings();
-    }, [loadSettings]);
-
-    return {
-        settings,
-        loading,
-        updateSettings,
-        refreshSettings: loadSettings,
-    };
-}

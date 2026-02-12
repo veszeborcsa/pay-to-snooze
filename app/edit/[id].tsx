@@ -11,8 +11,10 @@ import {
     Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useAlarms } from '../../hooks/useAlarms';
+import { useAlarms, useSettings } from '../../hooks/useAlarms';
 import { getAlarms, Alarm } from '../../store/alarmStore';
+import TimePicker from '../../components/TimePicker';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -20,6 +22,8 @@ export default function EditAlarmScreen() {
     const router = useRouter();
     const { id } = useLocalSearchParams<{ id: string }>();
     const { editAlarm, removeAlarm } = useAlarms();
+    const { settings } = useSettings();
+    const { t, dayNames } = useTranslation();
 
     const [alarm, setAlarm] = useState<Alarm | null>(null);
     const [hours, setHours] = useState('');
@@ -30,6 +34,7 @@ export default function EditAlarmScreen() {
     const [snoozeDuration, setSnoozeDuration] = useState(1);
     const [customDuration, setCustomDuration] = useState('');
     const [showCustomDuration, setShowCustomDuration] = useState(false);
+    const [showTimePicker, setShowTimePicker] = useState(false);
 
     const DURATION_PRESETS = [1, 5, 10, 15];
 
@@ -87,9 +92,9 @@ export default function EditAlarmScreen() {
         const price = parseFloat(snoozePrice);
         if (isNaN(price) || price < 1) {
             if (Platform.OS === 'web') {
-                window.alert('Snooze price must be at least $1.00');
+                window.alert(t.invalidPriceMessage);
             } else {
-                Alert.alert('Invalid Price', 'Snooze price must be at least $1.00');
+                Alert.alert(t.invalidPrice, t.invalidPriceMessage);
             }
             return;
         }
@@ -98,9 +103,9 @@ export default function EditAlarmScreen() {
         const m = parseInt(minutes);
         if (isNaN(h) || h < 0 || h > 23 || isNaN(m) || m < 0 || m > 59) {
             if (Platform.OS === 'web') {
-                window.alert('Please enter a valid time');
+                window.alert(t.invalidTimeMessage);
             } else {
-                Alert.alert('Invalid Time', 'Please enter a valid time');
+                Alert.alert(t.invalidTime, t.invalidTimeMessage);
             }
             return;
         }
@@ -119,18 +124,18 @@ export default function EditAlarmScreen() {
     const handleDelete = async () => {
         if (!alarm) return;
         if (Platform.OS === 'web') {
-            if (window.confirm(`Are you sure you want to delete "${alarm.label || 'this alarm'}"?`)) {
+            if (window.confirm(t.deleteConfirmMessage)) {
                 await removeAlarm(alarm.id);
                 router.back();
             }
         } else {
             Alert.alert(
-                'Delete Alarm',
-                `Are you sure you want to delete "${alarm.label || 'this alarm'}"?`,
+                t.deleteConfirmTitle,
+                t.deleteConfirmMessage,
                 [
-                    { text: 'Cancel', style: 'cancel' },
+                    { text: t.cancel, style: 'cancel' },
                     {
-                        text: 'Delete',
+                        text: t.delete,
                         style: 'destructive',
                         onPress: async () => {
                             await removeAlarm(alarm.id);
@@ -145,7 +150,7 @@ export default function EditAlarmScreen() {
     if (!alarm) {
         return (
             <View style={styles.container}>
-                <Text style={styles.loadingText}>Loading...</Text>
+                <Text style={styles.loadingText}>{t.loading}</Text>
             </View>
         );
     }
@@ -153,62 +158,66 @@ export default function EditAlarmScreen() {
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
             {/* Time Picker */}
-            <View style={styles.timeContainer}>
-                <TextInput
-                    style={styles.timeInput}
-                    value={hours}
-                    onChangeText={(t) => setHours(t.slice(0, 2))}
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    placeholder="00"
-                    placeholderTextColor="#444"
-                />
+            <TouchableOpacity style={styles.timeContainer} onPress={() => setShowTimePicker(true)}>
+                <View style={styles.timeBox}>
+                    <Text style={styles.timeDisplay}>{hours}</Text>
+                </View>
                 <Text style={styles.timeSeparator}>:</Text>
-                <TextInput
-                    style={styles.timeInput}
-                    value={minutes}
-                    onChangeText={(t) => setMinutes(t.slice(0, 2))}
-                    keyboardType="number-pad"
-                    maxLength={2}
-                    placeholder="00"
-                    placeholderTextColor="#444"
-                />
-            </View>
+                <View style={styles.timeBox}>
+                    <Text style={styles.timeDisplay}>{minutes}</Text>
+                </View>
+            </TouchableOpacity>
+
+            <TimePicker
+                visible={showTimePicker}
+                hours={hours}
+                minutes={minutes}
+                onConfirm={(h, m) => {
+                    setHours(h);
+                    setMinutes(m);
+                    setShowTimePicker(false);
+                }}
+                onCancel={() => setShowTimePicker(false)}
+            />
 
             {/* Label */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Label</Text>
+                <Text style={styles.sectionTitle}>{t.label}</Text>
                 <TextInput
                     style={styles.textInput}
                     value={label}
                     onChangeText={setLabel}
-                    placeholder="Wake up!"
+                    placeholder={t.labelPlaceholder}
                     placeholderTextColor="#666"
                 />
             </View>
 
             {/* Repeat Days */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Repeat</Text>
+                <Text style={styles.sectionTitle}>{t.repeat}</Text>
                 <View style={styles.daysContainer}>
-                    {DAYS.map((day, index) => (
-                        <TouchableOpacity
-                            key={day}
-                            style={[styles.dayButton, repeatDays.includes(index) && styles.dayButtonActive]}
-                            onPress={() => toggleDay(index)}
-                        >
-                            <Text style={[styles.dayButtonText, repeatDays.includes(index) && styles.dayButtonTextActive]}>
-                                {day}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                    {(() => {
+                        const startDay = settings?.startDayOfWeek || 0;
+                        const reordered = Array.from({ length: 7 }, (_, i) => (startDay + i) % 7);
+                        return reordered.map((dayIndex) => (
+                            <TouchableOpacity
+                                key={dayIndex}
+                                style={[styles.dayButton, repeatDays.includes(dayIndex) && styles.dayButtonActive]}
+                                onPress={() => toggleDay(dayIndex)}
+                            >
+                                <Text style={[styles.dayButtonText, repeatDays.includes(dayIndex) && styles.dayButtonTextActive]}>
+                                    {dayNames[dayIndex]}
+                                </Text>
+                            </TouchableOpacity>
+                        ));
+                    })()}
                 </View>
             </View>
 
             {/* Snooze Price */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Snooze Price 💰</Text>
-                <Text style={styles.sectionSubtitle}>Minimum $1.00 - make it hurt!</Text>
+                <Text style={styles.sectionTitle}>{t.snoozePriceTitle}</Text>
+                <Text style={styles.sectionSubtitle}>{t.snoozePriceSubtitle}</Text>
                 <View style={styles.priceContainer}>
                     <Text style={styles.currencySign}>$</Text>
                     <TextInput
@@ -224,7 +233,7 @@ export default function EditAlarmScreen() {
 
             {/* Snooze Duration */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Snooze Duration</Text>
+                <Text style={styles.sectionTitle}>{t.snoozeDuration}</Text>
                 <View style={styles.durationContainer}>
                     {DURATION_PRESETS.map((min) => (
                         <TouchableOpacity
@@ -233,7 +242,7 @@ export default function EditAlarmScreen() {
                             onPress={() => selectPresetDuration(min)}
                         >
                             <Text style={[styles.durationText, snoozeDuration === min && !showCustomDuration && styles.durationTextActive]}>
-                                {min} min
+                                {min} {t.min}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -242,7 +251,7 @@ export default function EditAlarmScreen() {
                         onPress={selectCustomDuration}
                     >
                         <Text style={[styles.durationText, showCustomDuration && styles.durationTextActive]}>
-                            Other
+                            {t.other}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -253,26 +262,26 @@ export default function EditAlarmScreen() {
                             value={customDuration}
                             onChangeText={handleCustomDurationChange}
                             keyboardType="number-pad"
-                            placeholder="Enter minutes"
+                            placeholder={t.enterMinutes}
                             placeholderTextColor="#666"
                             autoFocus
                         />
-                        <Text style={styles.customDurationLabel}>minutes</Text>
+                        <Text style={styles.customDurationLabel}>{t.minutes}</Text>
                     </View>
                 )}
             </View>
 
             {/* Save Button */}
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>Save Changes</Text>
+                <Text style={styles.saveButtonText}>{t.saveChanges}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-                <Text style={styles.deleteButtonText}>Delete Alarm</Text>
+                <Text style={styles.deleteButtonText}>{t.deleteAlarm}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>{t.cancel}</Text>
             </TouchableOpacity>
         </ScrollView>
     );
@@ -299,16 +308,20 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 32,
     },
-    timeInput: {
+    timeBox: {
+        backgroundColor: '#1a1a2e',
+        borderRadius: 16,
+        width: 120,
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    timeDisplay: {
         fontSize: 72,
         fontWeight: '200',
         color: '#fff',
-        backgroundColor: '#1a1a2e',
-        borderRadius: 16,
-        paddingHorizontal: 24,
-        paddingVertical: 16,
         textAlign: 'center',
-        width: 120,
     },
     timeSeparator: {
         fontSize: 72,
