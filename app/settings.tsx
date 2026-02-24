@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useSettings } from '../hooks/useAlarms';
 import { useTranslation } from '../hooks/useTranslation';
 import { useTheme, themeNames, getTheme, ThemeName } from '../theme/theme';
+import SoundPicker from '../components/SoundPicker';
 
 const DURATION_PRESETS = [1, 5, 10, 15];
 const LANGUAGES = [
@@ -93,6 +94,15 @@ export default function SettingsScreen() {
                         );
                     })}
                 </View>
+            </View>
+            {/* Alarm Sound */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.alarmSound}</Text>
+                <SoundPicker
+                    selectedSound={settings.defaultSound || 'classic'}
+                    onSelectSound={(id) => updateSettings({ defaultSound: id })}
+                    t={t}
+                />
             </View>
 
             {/* Language */}
@@ -366,5 +376,27 @@ const styles = StyleSheet.create({
     },
     customDurationLabel: {
         fontSize: 16,
+    },
+    soundContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 8,
+    },
+    soundOption: {
+        flex: 1,
+        minWidth: 60,
+        paddingVertical: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        gap: 4,
+    },
+    soundEmoji: {
+        fontSize: 20,
+    },
+    soundLabel: {
+        fontSize: 11,
+        fontWeight: '600',
     },
 });

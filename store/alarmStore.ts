@@ -13,8 +13,15 @@ export interface Alarm {
   vibrate: boolean;
 }
 
+export interface CustomSound {
+  id: string;
+  name: string;
+  dataUrl: string; // base64 data URL of the audio file
+}
+
 const ALARMS_KEY = '@snoozepay_alarms';
 const SETTINGS_KEY = '@snoozepay_settings';
+const CUSTOM_SOUNDS_KEY = '@snoozepay_custom_sounds';
 
 export interface Settings {
   defaultSnoozePrice: number;
@@ -24,16 +31,20 @@ export interface Settings {
   language: string;
   startDayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
   colorTheme: string; // 'midnight' | 'ocean' | 'forest' | 'sunset'
+  username: string;
+  email: string;
 }
 
 const defaultSettings: Settings = {
   defaultSnoozePrice: 1,
   defaultSnoozeDuration: 1,
-  defaultSound: 'default',
+  defaultSound: 'classic',
   totalSpentOnSnoozing: 0,
   language: 'en',
   startDayOfWeek: 0,
   colorTheme: 'midnight',
+  username: '',
+  email: '',
 };
 
 // Get all alarms
@@ -120,4 +131,36 @@ export async function saveSettings(settings: Partial<Settings>): Promise<void> {
 export async function addSnoozeSpending(amount: number): Promise<void> {
   const settings = await getSettings();
   await saveSettings({ totalSpentOnSnoozing: settings.totalSpentOnSnoozing + amount });
+}
+
+// --- Custom Sounds ---
+
+export async function getCustomSounds(): Promise<CustomSound[]> {
+  try {
+    const json = await AsyncStorage.getItem(CUSTOM_SOUNDS_KEY);
+    return json ? JSON.parse(json) : [];
+  } catch (error) {
+    console.error('Error loading custom sounds:', error);
+    return [];
+  }
+}
+
+export async function saveCustomSound(sound: CustomSound): Promise<void> {
+  try {
+    const sounds = await getCustomSounds();
+    sounds.push(sound);
+    await AsyncStorage.setItem(CUSTOM_SOUNDS_KEY, JSON.stringify(sounds));
+  } catch (error) {
+    console.error('Error saving custom sound:', error);
+  }
+}
+
+export async function deleteCustomSound(id: string): Promise<void> {
+  try {
+    const sounds = await getCustomSounds();
+    const filtered = sounds.filter(s => s.id !== id);
+    await AsyncStorage.setItem(CUSTOM_SOUNDS_KEY, JSON.stringify(filtered));
+  } catch (error) {
+    console.error('Error deleting custom sound:', error);
+  }
 }

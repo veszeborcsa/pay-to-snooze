@@ -16,6 +16,8 @@ import { getAlarms, Alarm } from '../../store/alarmStore';
 import TimePicker from '../../components/TimePicker';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useTheme } from '../../theme/theme';
+import SoundPicker from '../../components/SoundPicker';
+
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -37,6 +39,7 @@ export default function EditAlarmScreen() {
     const [customDuration, setCustomDuration] = useState('');
     const [showCustomDuration, setShowCustomDuration] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
+    const [sound, setSound] = useState(settings?.defaultSound || 'classic');
 
     const DURATION_PRESETS = [1, 5, 10, 15];
 
@@ -73,6 +76,7 @@ export default function EditAlarmScreen() {
             setRepeatDays(found.repeatDays);
             setSnoozePrice(found.snoozePrice.toString());
             setSnoozeDuration(found.snoozeDuration);
+            setSound(found.sound || 'classic');
             if (![1, 5, 10, 15].includes(found.snoozeDuration)) {
                 setShowCustomDuration(true);
                 setCustomDuration(found.snoozeDuration.toString());
@@ -118,6 +122,7 @@ export default function EditAlarmScreen() {
             repeatDays,
             snoozePrice: price,
             snoozeDuration,
+            sound: sound,
         });
 
         router.back();
@@ -297,6 +302,16 @@ export default function EditAlarmScreen() {
                 )}
             </View>
 
+            {/* Alarm Sound */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.alarmSound}</Text>
+                <SoundPicker
+                    selectedSound={sound}
+                    onSelectSound={setSound}
+                    t={t}
+                />
+            </View>
+
             {/* Save Button */}
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.accent }]} onPress={handleSave}>
                 <Text style={[styles.saveButtonText, { color: theme.textPrimary }]}>{t.saveChanges}</Text>
@@ -434,6 +449,28 @@ const styles = StyleSheet.create({
     },
     customDurationLabel: {
         fontSize: 16,
+    },
+    soundContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 8,
+    },
+    soundOption: {
+        flex: 1,
+        minWidth: 60,
+        paddingVertical: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        gap: 4,
+    },
+    soundEmoji: {
+        fontSize: 20,
+    },
+    soundLabel: {
+        fontSize: 11,
+        fontWeight: '600',
     },
     saveButton: {
         borderRadius: 16,

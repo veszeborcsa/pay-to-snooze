@@ -14,6 +14,8 @@ import { useAlarms, useSettings } from '../hooks/useAlarms';
 import TimePicker from '../components/TimePicker';
 import { useTranslation } from '../hooks/useTranslation';
 import { useTheme } from '../theme/theme';
+import SoundPicker from '../components/SoundPicker';
+
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -34,6 +36,7 @@ export default function CreateAlarmScreen() {
     const [customDuration, setCustomDuration] = useState('');
     const [showCustomDuration, setShowCustomDuration] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
+    const [sound, setSound] = useState(settings?.defaultSound || 'classic');
 
     const DURATION_PRESETS = [1, 5, 10, 15];
 
@@ -83,7 +86,7 @@ export default function CreateAlarmScreen() {
             repeatDays,
             snoozePrice: price,
             snoozeDuration,
-            sound: 'default',
+            sound: sound,
             vibrate: true,
         });
 
@@ -230,6 +233,16 @@ export default function CreateAlarmScreen() {
                 )}
             </View>
 
+            {/* Alarm Sound */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.alarmSound}</Text>
+                <SoundPicker
+                    selectedSound={sound}
+                    onSelectSound={setSound}
+                    t={t}
+                />
+            </View>
+
             {/* Save Button */}
             <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.accent }]} onPress={handleSave}>
                 <Text style={[styles.saveButtonText, { color: theme.textPrimary }]}>{t.createAlarmButton}</Text>
@@ -358,6 +371,28 @@ const styles = StyleSheet.create({
     },
     customDurationLabel: {
         fontSize: 16,
+    },
+    soundContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 8,
+    },
+    soundOption: {
+        flex: 1,
+        minWidth: 60,
+        paddingVertical: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        gap: 4,
+    },
+    soundEmoji: {
+        fontSize: 20,
+    },
+    soundLabel: {
+        fontSize: 11,
+        fontWeight: '600',
     },
     saveButton: {
         borderRadius: 16,

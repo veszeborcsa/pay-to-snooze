@@ -308,11 +308,13 @@ describe('getSettings', () => {
         expect(settings).toEqual({
             defaultSnoozePrice: 1,
             defaultSnoozeDuration: 1,
-            defaultSound: 'default',
+            defaultSound: 'classic',
             totalSpentOnSnoozing: 0,
             language: 'en',
             startDayOfWeek: 0,
             colorTheme: 'midnight',
+            username: '',
+            email: '',
         });
     });
 

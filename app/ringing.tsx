@@ -16,6 +16,7 @@ import { addSnoozeSpending } from '../store/alarmStore';
 import { scheduleWebSnooze } from '../hooks/useAlarmChecker';
 import { useTranslation } from '../hooks/useTranslation';
 import { useTheme } from '../theme/theme';
+import { startAlarmSound, stopAlarmSound } from '../services/soundService';
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +29,7 @@ export default function RingingScreen() {
     const label = (params.label as string) || 'Wake Up!';
     const snoozePrice = parseFloat(params.snoozePrice as string) || 1;
     const snoozeDuration = parseInt(params.snoozeDuration as string) || 1;
+    const sound = (params.sound as string) || 'classic';
     const { t } = useTranslation();
 
     const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -79,11 +81,13 @@ export default function RingingScreen() {
     const startAlarm = () => {
         // Start vibration pattern (repeating)
         Vibration.vibrate([500, 500, 500, 500], true);
+        startAlarmSound(sound);
         console.log('Alarm ringing!');
     };
 
     const stopAlarm = () => {
         Vibration.cancel();
+        stopAlarmSound();
     };
 
     const handleDismiss = () => {
