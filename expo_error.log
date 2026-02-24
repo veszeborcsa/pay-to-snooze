@@ -1,0 +1,77 @@
+Starting project at C:\Users\User\Documents\projektek\pay-to-snooze
+Starting Metro Bundler
+Waiting on http://localhost:8083
+Logs for your project will appear below.
+Web Bundling failed 590ms node_modules\expo-router\entry.js (1 module)
+ ERROR  Error: [BABEL] C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo-router\entry.js: Cannot find module 'react-native-worklets/plugin'
+Require stack:
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\react-native-reanimated\plugin\index.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo\node_modules\babel-preset-expo\build\index.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo\internal\babel-preset.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo\node_modules\@expo\metro-config\build\loadBabelConfig.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo\node_modules\@expo\metro-config\build\babel-transformer.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo\node_modules\@expo\metro-config\build\transform-worker\metro-transform-worker.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo\node_modules\@expo\metro-config\build\transform-worker\transform-worker.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\metro\src\DeltaBundler\Worker.flow.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\metro\src\DeltaBundler\Worker.js
+- C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\jest-worker\build\workers\processChild.js (While processing: "base$0")
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.require (node:internal/modules/cjs/loader:1504:12)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\react-native-reanimated\plugin\index.js:2:16)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.require (node:internal/modules/cjs/loader:1504:12)
+    at require (node:internal/modules/helpers:152:16)
+    at babelPresetExpo (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo\node_modules\babel-preset-expo\build\index.js:291:62)
+    at sync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\gensync-utils\async.js:30:25)
+    at sync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\gensync\index.js:182:19)
+    at C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\gensync\index.js:210:24
+    at Generator.next (<anonymous>)
+    at C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\config\full.js:180:21
+    at Generator.next (<anonymous>)
+    at Function.<anonymous> (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\gensync-utils\async.js:21:3)
+    at Generator.next (<anonymous>)
+    at evaluateSync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\gensync\index.js:251:28)
+    at Function.sync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\gensync\index.js:89:14)
+    at sync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\gensync-utils\async.js:61:25)
+    at sync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\gensync\index.js:182:19)
+    at onFirstPause (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\gensync\index.js:210:24)
+    at Generator.next (<anonymous>)
+    at cachedFunction (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\config\caching.js:52:46)
+    at cachedFunction.next (<anonymous>)
+    at loadPresetDescriptor (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\config\full.js:292:43)
+    at loadPresetDescriptor.next (<anonymous>)
+    at recursePresetDescriptors (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\config\full.js:77:31)
+    at recursePresetDescriptors.next (<anonymous>)
+    at C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\config\full.js:156:21
+    at Generator.next (<anonymous>)
+    at loadFullConfig (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\config\full.js:113:5)
+    at loadFullConfig.next (<anonymous>)
+    at transform (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\transform.js:20:44)
+    at transform.next (<anonymous>)
+    at evaluateSync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\gensync\index.js:251:28)
+    at sync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\gensync\index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\errors\rewrite-stack-trace.js:47:12)
+    at Object.transformSync (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\@babel\core\lib\transform.js:40:76)
+    at parseWithBabel (C:\Users\User\Documents\projektek\pay-to-snooze\node_modules\expo\node_modules\@expo\metro-config\build\transformSync.js:75:18)
+
+---STDERR---
+The following packages should be updated for best compatibility with the installed expo version:
+  expo@54.0.32 - expected version: ~54.0.33
+  expo-router@6.0.22 - expected version: ~6.0.23
+  @types/jest@30.0.0 - expected version: 29.5.14
+  jest@30.2.0 - expected version: ~29.7.0
+Your project may not work correctly until you install the expected versions of the packages.
+
+---MESSAGE---
+spawnSync C:\WINDOWS\system32\cmd.exe ETIMEDOUT

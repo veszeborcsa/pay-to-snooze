@@ -23,6 +23,7 @@ export interface Settings {
   totalSpentOnSnoozing: number;
   language: string;
   startDayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
+  colorTheme: string; // 'midnight' | 'ocean' | 'forest' | 'sunset'
 }
 
 const defaultSettings: Settings = {
@@ -32,6 +33,7 @@ const defaultSettings: Settings = {
   totalSpentOnSnoozing: 0,
   language: 'en',
   startDayOfWeek: 0,
+  colorTheme: 'midnight',
 };
 
 // Get all alarms

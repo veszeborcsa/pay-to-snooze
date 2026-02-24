@@ -15,6 +15,7 @@ import { useAlarms, useSettings } from '../../hooks/useAlarms';
 import { getAlarms, Alarm } from '../../store/alarmStore';
 import TimePicker from '../../components/TimePicker';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useTheme } from '../../theme/theme';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -24,6 +25,7 @@ export default function EditAlarmScreen() {
     const { editAlarm, removeAlarm } = useAlarms();
     const { settings } = useSettings();
     const { t, dayNames } = useTranslation();
+    const theme = useTheme();
 
     const [alarm, setAlarm] = useState<Alarm | null>(null);
     const [hours, setHours] = useState('');
@@ -149,22 +151,22 @@ export default function EditAlarmScreen() {
 
     if (!alarm) {
         return (
-            <View style={styles.container}>
-                <Text style={styles.loadingText}>{t.loading}</Text>
+            <View style={[styles.container, { backgroundColor: theme.card }]}>
+                <Text style={[styles.loadingText, { color: theme.textMuted }]}>{t.loading}</Text>
             </View>
         );
     }
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScrollView style={[styles.container, { backgroundColor: theme.card }]} contentContainerStyle={styles.content}>
             {/* Time Picker */}
             <TouchableOpacity style={styles.timeContainer} onPress={() => setShowTimePicker(true)}>
-                <View style={styles.timeBox}>
-                    <Text style={styles.timeDisplay}>{hours}</Text>
+                <View style={[styles.timeBox, { backgroundColor: theme.background }]}>
+                    <Text style={[styles.timeDisplay, { color: theme.textPrimary }]}>{hours}</Text>
                 </View>
-                <Text style={styles.timeSeparator}>:</Text>
-                <View style={styles.timeBox}>
-                    <Text style={styles.timeDisplay}>{minutes}</Text>
+                <Text style={[styles.timeSeparator, { color: theme.accent }]}>:</Text>
+                <View style={[styles.timeBox, { backgroundColor: theme.background }]}>
+                    <Text style={[styles.timeDisplay, { color: theme.textPrimary }]}>{minutes}</Text>
                 </View>
             </TouchableOpacity>
 
@@ -182,19 +184,19 @@ export default function EditAlarmScreen() {
 
             {/* Label */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.label}</Text>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.label}</Text>
                 <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { backgroundColor: theme.background, color: theme.textPrimary, borderColor: theme.secondary }]}
                     value={label}
                     onChangeText={setLabel}
                     placeholder={t.labelPlaceholder}
-                    placeholderTextColor="#666"
+                    placeholderTextColor={theme.textMuted}
                 />
             </View>
 
             {/* Repeat Days */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.repeat}</Text>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.repeat}</Text>
                 <View style={styles.daysContainer}>
                     {(() => {
                         const startDay = settings?.startDayOfWeek || 0;
@@ -202,10 +204,18 @@ export default function EditAlarmScreen() {
                         return reordered.map((dayIndex) => (
                             <TouchableOpacity
                                 key={dayIndex}
-                                style={[styles.dayButton, repeatDays.includes(dayIndex) && styles.dayButtonActive]}
+                                style={[
+                                    styles.dayButton,
+                                    { backgroundColor: theme.background, borderColor: theme.secondary },
+                                    repeatDays.includes(dayIndex) && { backgroundColor: theme.accent, borderColor: theme.accent }
+                                ]}
                                 onPress={() => toggleDay(dayIndex)}
                             >
-                                <Text style={[styles.dayButtonText, repeatDays.includes(dayIndex) && styles.dayButtonTextActive]}>
+                                <Text style={[
+                                    styles.dayButtonText,
+                                    { color: theme.textMuted },
+                                    repeatDays.includes(dayIndex) && { color: theme.textPrimary }
+                                ]}>
                                     {dayNames[dayIndex]}
                                 </Text>
                             </TouchableOpacity>
@@ -216,41 +226,57 @@ export default function EditAlarmScreen() {
 
             {/* Snooze Price */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.snoozePriceTitle}</Text>
-                <Text style={styles.sectionSubtitle}>{t.snoozePriceSubtitle}</Text>
-                <View style={styles.priceContainer}>
-                    <Text style={styles.currencySign}>$</Text>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.snoozePriceTitle}</Text>
+                <Text style={[styles.sectionSubtitle, { color: theme.textMuted }]}>{t.snoozePriceSubtitle}</Text>
+                <View style={[styles.priceContainer, { backgroundColor: theme.background, borderColor: theme.secondary }]}>
+                    <Text style={[styles.currencySign, { color: theme.danger }]}>$</Text>
                     <TextInput
-                        style={styles.priceInput}
+                        style={[styles.priceInput, { color: theme.textPrimary }]}
                         value={snoozePrice}
                         onChangeText={setSnoozePrice}
                         keyboardType="decimal-pad"
                         placeholder="1.00"
-                        placeholderTextColor="#666"
+                        placeholderTextColor={theme.textMuted}
                     />
                 </View>
             </View>
 
             {/* Snooze Duration */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.snoozeDuration}</Text>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.snoozeDuration}</Text>
                 <View style={styles.durationContainer}>
                     {DURATION_PRESETS.map((min) => (
                         <TouchableOpacity
                             key={min}
-                            style={[styles.durationButton, snoozeDuration === min && !showCustomDuration && styles.durationButtonActive]}
+                            style={[
+                                styles.durationButton,
+                                { backgroundColor: theme.background, borderColor: theme.secondary },
+                                snoozeDuration === min && !showCustomDuration && { backgroundColor: theme.accent, borderColor: theme.accent }
+                            ]}
                             onPress={() => selectPresetDuration(min)}
                         >
-                            <Text style={[styles.durationText, snoozeDuration === min && !showCustomDuration && styles.durationTextActive]}>
+                            <Text style={[
+                                styles.durationText,
+                                { color: theme.textMuted },
+                                snoozeDuration === min && !showCustomDuration && { color: theme.textPrimary }
+                            ]}>
                                 {min} {t.min}
                             </Text>
                         </TouchableOpacity>
                     ))}
                     <TouchableOpacity
-                        style={[styles.durationButton, showCustomDuration && styles.durationButtonActive]}
+                        style={[
+                            styles.durationButton,
+                            { backgroundColor: theme.background, borderColor: theme.secondary },
+                            showCustomDuration && { backgroundColor: theme.accent, borderColor: theme.accent }
+                        ]}
                         onPress={selectCustomDuration}
                     >
-                        <Text style={[styles.durationText, showCustomDuration && styles.durationTextActive]}>
+                        <Text style={[
+                            styles.durationText,
+                            { color: theme.textMuted },
+                            showCustomDuration && { color: theme.textPrimary }
+                        ]}>
                             {t.other}
                         </Text>
                     </TouchableOpacity>
@@ -258,30 +284,30 @@ export default function EditAlarmScreen() {
                 {showCustomDuration && (
                     <View style={styles.customDurationContainer}>
                         <TextInput
-                            style={styles.customDurationInput}
+                            style={[styles.customDurationInput, { backgroundColor: theme.background, color: theme.textPrimary, borderColor: theme.accent }]}
                             value={customDuration}
                             onChangeText={handleCustomDurationChange}
                             keyboardType="number-pad"
                             placeholder={t.enterMinutes}
-                            placeholderTextColor="#666"
+                            placeholderTextColor={theme.textMuted}
                             autoFocus
                         />
-                        <Text style={styles.customDurationLabel}>{t.minutes}</Text>
+                        <Text style={[styles.customDurationLabel, { color: theme.textMuted }]}>{t.minutes}</Text>
                     </View>
                 )}
             </View>
 
             {/* Save Button */}
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                <Text style={styles.saveButtonText}>{t.saveChanges}</Text>
+            <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.accent }]} onPress={handleSave}>
+                <Text style={[styles.saveButtonText, { color: theme.textPrimary }]}>{t.saveChanges}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-                <Text style={styles.deleteButtonText}>{t.deleteAlarm}</Text>
+            <TouchableOpacity style={[styles.deleteButton, { backgroundColor: theme.danger }]} onPress={handleDelete}>
+                <Text style={[styles.deleteButtonText, { color: theme.textPrimary }]}>{t.deleteAlarm}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-                <Text style={styles.cancelButtonText}>{t.cancel}</Text>
+                <Text style={[styles.cancelButtonText, { color: theme.textMuted }]}>{t.cancel}</Text>
             </TouchableOpacity>
         </ScrollView>
     );
@@ -290,14 +316,12 @@ export default function EditAlarmScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#16213e',
     },
     content: {
         padding: 24,
         paddingBottom: 48,
     },
     loadingText: {
-        color: '#888',
         fontSize: 16,
         textAlign: 'center',
         marginTop: 40,
@@ -309,7 +333,6 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     timeBox: {
-        backgroundColor: '#1a1a2e',
         borderRadius: 16,
         width: 120,
         paddingHorizontal: 24,
@@ -320,13 +343,11 @@ const styles = StyleSheet.create({
     timeDisplay: {
         fontSize: 72,
         fontWeight: '200',
-        color: '#fff',
         textAlign: 'center',
     },
     timeSeparator: {
         fontSize: 72,
         fontWeight: '200',
-        color: '#4a9f7f',
         marginHorizontal: 8,
     },
     section: {
@@ -335,22 +356,17 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#fff',
         marginBottom: 8,
     },
     sectionSubtitle: {
         fontSize: 12,
-        color: '#888',
         marginBottom: 12,
     },
     textInput: {
-        backgroundColor: '#1a1a2e',
         borderRadius: 12,
         padding: 16,
         fontSize: 16,
-        color: '#fff',
         borderWidth: 1,
-        borderColor: '#2a2a4e',
     },
     daysContainer: {
         flexDirection: 'row',
@@ -360,42 +376,28 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#1a1a2e',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2a2a4e',
-    },
-    dayButtonActive: {
-        backgroundColor: '#4a9f7f',
-        borderColor: '#4a9f7f',
     },
     dayButtonText: {
         fontSize: 12,
-        color: '#888',
         fontWeight: '600',
-    },
-    dayButtonTextActive: {
-        color: '#fff',
     },
     priceContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#1a1a2e',
         borderRadius: 12,
         paddingHorizontal: 16,
         borderWidth: 1,
-        borderColor: '#2a2a4e',
     },
     currencySign: {
         fontSize: 32,
-        color: '#e74c3c',
         fontWeight: 'bold',
     },
     priceInput: {
         flex: 1,
         fontSize: 32,
-        color: '#fff',
         padding: 16,
     },
     durationContainer: {
@@ -409,22 +411,12 @@ const styles = StyleSheet.create({
         minWidth: 50,
         paddingVertical: 14,
         borderRadius: 12,
-        backgroundColor: '#1a1a2e',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2a2a4e',
-    },
-    durationButtonActive: {
-        backgroundColor: '#4a9f7f',
-        borderColor: '#4a9f7f',
     },
     durationText: {
         fontSize: 14,
-        color: '#888',
         fontWeight: '600',
-    },
-    durationTextActive: {
-        color: '#fff',
     },
     customDurationContainer: {
         flexDirection: 'row',
@@ -434,21 +426,16 @@ const styles = StyleSheet.create({
     },
     customDurationInput: {
         flex: 1,
-        backgroundColor: '#1a1a2e',
         borderRadius: 12,
         padding: 14,
         fontSize: 18,
-        color: '#fff',
         borderWidth: 1,
-        borderColor: '#4a9f7f',
         textAlign: 'center',
     },
     customDurationLabel: {
         fontSize: 16,
-        color: '#888',
     },
     saveButton: {
-        backgroundColor: '#4a9f7f',
         borderRadius: 16,
         padding: 18,
         alignItems: 'center',
@@ -457,10 +444,8 @@ const styles = StyleSheet.create({
     saveButtonText: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
     },
     deleteButton: {
-        backgroundColor: '#e74c3c',
         borderRadius: 16,
         padding: 18,
         alignItems: 'center',
@@ -469,7 +454,6 @@ const styles = StyleSheet.create({
     deleteButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#fff',
     },
     cancelButton: {
         padding: 18,
@@ -478,6 +462,5 @@ const styles = StyleSheet.create({
     },
     cancelButtonText: {
         fontSize: 16,
-        color: '#888',
     },
 });

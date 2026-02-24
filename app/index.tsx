@@ -1,17 +1,44 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Switch, Alert, Pressable, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Pressable, Platform, Animated } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { useAlarms } from '../hooks/useAlarms';
 import { Alarm } from '../store/alarmStore';
 import { useTranslation } from '../hooks/useTranslation';
+import { useTheme, ThemeColors } from '../theme/theme';
 
-function AlarmCard({ alarm, onToggle, onPress, onDelete, dayNames, t }: {
+// Custom toggle that respects theme colors (RN Web Switch ignores thumbColor)
+function ThemedToggle({ value, onValueChange, theme }: { value: boolean; onValueChange: () => void; theme: ThemeColors }) {
+    const animValue = useRef(new Animated.Value(value ? 1 : 0)).current;
+
+    useEffect(() => {
+        Animated.timing(animValue, {
+            toValue: value ? 1 : 0,
+            duration: 200,
+            useNativeDriver: false,
+        }).start();
+    }, [value]);
+
+    const translateX = animValue.interpolate({ inputRange: [0, 1], outputRange: [2, 20] });
+    const trackBg = animValue.interpolate({ inputRange: [0, 1], outputRange: [theme.secondary, `${theme.accent}66`] });
+    const thumbBg = animValue.interpolate({ inputRange: [0, 1], outputRange: ['#888888', theme.accent] });
+
+    return (
+        <Pressable onPress={onValueChange}>
+            <Animated.View style={{ width: 40, height: 22, borderRadius: 11, backgroundColor: trackBg, justifyContent: 'center' }}>
+                <Animated.View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: thumbBg, transform: [{ translateX }] }} />
+            </Animated.View>
+        </Pressable>
+    );
+}
+
+function AlarmCard({ alarm, onToggle, onPress, onDelete, dayNames, t, theme }: {
     alarm: Alarm;
     onToggle: () => void;
     onPress: () => void;
     onDelete: () => void;
     dayNames: string[];
     t: Record<string, string>;
+    theme: ThemeColors;
 }) {
     const handleDelete = () => {
         if (Platform.OS === 'web') {
@@ -32,17 +59,17 @@ function AlarmCard({ alarm, onToggle, onPress, onDelete, dayNames, t }: {
 
     return (
         <View
-            style={[styles.alarmCard, !alarm.enabled && styles.alarmCardDisabled]}
+            style={[styles.alarmCard, { backgroundColor: theme.background, borderColor: theme.secondary }, !alarm.enabled && styles.alarmCardDisabled]}
         >
             <Pressable
                 style={styles.alarmInfo}
                 onPress={onPress}
                 onLongPress={handleDelete}
             >
-                <Text style={[styles.alarmTime, !alarm.enabled && styles.textDisabled]}>
+                <Text style={[styles.alarmTime, { color: theme.textPrimary }, !alarm.enabled && styles.textDisabled]}>
                     {alarm.time}
                 </Text>
-                <Text style={[styles.alarmLabel, !alarm.enabled && styles.textDisabled]}>
+                <Text style={[styles.alarmLabel, { color: theme.textSecondary }, !alarm.enabled && styles.textDisabled]}>
                     {alarm.label || t.label}
                 </Text>
                 <View style={styles.repeatDays}>
@@ -52,7 +79,8 @@ function AlarmCard({ alarm, onToggle, onPress, onDelete, dayNames, t }: {
                                 key={day}
                                 style={[
                                     styles.dayText,
-                                    alarm.repeatDays.includes(index) && styles.dayActive,
+                                    { color: theme.textMuted },
+                                    alarm.repeatDays.includes(index) && { color: theme.accent, fontWeight: 'bold' as const },
                                     !alarm.enabled && styles.textDisabled,
                                 ]}
                             >
@@ -60,25 +88,20 @@ function AlarmCard({ alarm, onToggle, onPress, onDelete, dayNames, t }: {
                             </Text>
                         ))
                     ) : (
-                        <Text style={[styles.repeatText, !alarm.enabled && styles.textDisabled]}>
+                        <Text style={[styles.repeatText, { color: theme.textMuted }, !alarm.enabled && styles.textDisabled]}>
                             {t.oneTime}
                         </Text>
                     )}
                 </View>
             </Pressable>
             <View style={styles.alarmRight}>
-                <Text style={[styles.snoozePrice, !alarm.enabled && styles.textDisabled]}>
+                <Text style={[styles.snoozePrice, { color: theme.danger }, !alarm.enabled && styles.textDisabled]}>
                     ${alarm.snoozePrice.toFixed(2)}
                 </Text>
-                <Text style={[styles.snoozePriceLabel, !alarm.enabled && styles.textDisabled]}>
+                <Text style={[styles.snoozePriceLabel, { color: theme.textMuted }, !alarm.enabled && styles.textDisabled]}>
                     {t.toSnooze}
                 </Text>
-                <Switch
-                    value={alarm.enabled}
-                    onValueChange={onToggle}
-                    trackColor={{ false: '#3a3a5a', true: '#4a9f7f' }}
-                    thumbColor={alarm.enabled ? '#2ecc71' : '#888'}
-                />
+                <ThemedToggle value={alarm.enabled} onValueChange={onToggle} theme={theme} />
             </View>
         </View>
     );
@@ -88,6 +111,7 @@ export default function HomeScreen() {
     const router = useRouter();
     const { alarms, loading, toggleAlarm, removeAlarm, refreshAlarms } = useAlarms();
     const { t, dayNames } = useTranslation();
+    const theme = useTheme();
 
     useFocusEffect(
         useCallback(() => {
@@ -102,12 +126,12 @@ export default function HomeScreen() {
     });
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.card }]}>
             {alarms.length === 0 && !loading ? (
                 <View style={styles.emptyState}>
                     <Text style={styles.emptyIcon}>⏰</Text>
-                    <Text style={styles.emptyTitle}>{t.noAlarmsYet}</Text>
-                    <Text style={styles.emptySubtitle}>
+                    <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>{t.noAlarmsYet}</Text>
+                    <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
                         {t.noAlarmsSubtitle}
                     </Text>
                 </View>
@@ -124,16 +148,17 @@ export default function HomeScreen() {
                             onDelete={() => removeAlarm(item.id)}
                             dayNames={dayNames}
                             t={t}
+                            theme={theme}
                         />
                     )}
                 />
             )}
 
             <TouchableOpacity
-                style={styles.fab}
+                style={[styles.fab, { backgroundColor: theme.accent, shadowColor: theme.accent }]}
                 onPress={() => router.push('/create')}
             >
-                <Text style={styles.fabIcon}>+</Text>
+                <Text style={[styles.fabIcon, { color: theme.textPrimary }]}>+</Text>
             </TouchableOpacity>
         </View>
     );
@@ -142,14 +167,12 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#16213e',
     },
     list: {
         padding: 16,
         paddingBottom: 100,
     },
     alarmCard: {
-        backgroundColor: '#1a1a2e',
         borderRadius: 16,
         padding: 20,
         marginBottom: 12,
@@ -157,7 +180,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2a2a4e',
     },
     alarmCardDisabled: {
         opacity: 0.6,
@@ -168,12 +190,10 @@ const styles = StyleSheet.create({
     alarmTime: {
         fontSize: 42,
         fontWeight: '200',
-        color: '#fff',
         letterSpacing: 2,
     },
     alarmLabel: {
         fontSize: 16,
-        color: '#9999aa',
         marginTop: 4,
     },
     repeatDays: {
@@ -183,45 +203,21 @@ const styles = StyleSheet.create({
     },
     dayText: {
         fontSize: 12,
-        color: '#555',
         paddingHorizontal: 4,
-    },
-    dayActive: {
-        color: '#4a9f7f',
-        fontWeight: 'bold',
     },
     repeatText: {
         fontSize: 12,
-        color: '#666',
     },
     alarmRight: {
         alignItems: 'center',
         marginLeft: 16,
     },
-    deleteButton: {
-        position: 'absolute',
-        top: -10,
-        right: -10,
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#e74c3c33',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    deleteButtonText: {
-        color: '#e74c3c',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
     snoozePrice: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#e74c3c',
     },
     snoozePriceLabel: {
         fontSize: 11,
-        color: '#888',
         marginBottom: 8,
     },
     textDisabled: {
@@ -240,12 +236,10 @@ const styles = StyleSheet.create({
     emptyTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#fff',
         marginBottom: 8,
     },
     emptySubtitle: {
         fontSize: 16,
-        color: '#888',
         textAlign: 'center',
     },
     fab: {
@@ -255,32 +249,18 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 32,
-        backgroundColor: '#4a9f7f',
         justifyContent: 'center',
         alignItems: 'center',
         elevation: 8,
-        shadowColor: '#4a9f7f',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.4,
         shadowRadius: 8,
     },
     fabIcon: {
         fontSize: 36,
-        color: '#fff',
-        marginTop: -2,
-    },
-    settingsButton: {
-        position: 'absolute',
-        top: 12,
-        right: 16,
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: '#2a2a4e',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    settingsIcon: {
-        fontSize: 24,
+        lineHeight: 36,
+        textAlign: 'center',
+        includeFontPadding: false,
+        marginTop: -3,
     },
 });

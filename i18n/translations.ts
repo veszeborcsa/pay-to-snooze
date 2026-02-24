@@ -61,6 +61,11 @@ const translations: Record<Language, Record<string, string>> = {
         defaultSnoozePrice: '💰 Default Snooze Price',
         defaultSnoozePriceSubtitle: 'New alarms will use this price',
         defaultSnoozeDuration: '⏱️ Default Snooze Duration',
+        colorTheme: '🎨 Color Theme',
+        themeMidnight: 'Midnight',
+        themeOcean: 'Ocean',
+        themeForest: 'Forest',
+        themeSunset: 'Sunset',
 
         // Profile screen
         sleepyhead: 'Sleepyhead',
@@ -146,6 +151,11 @@ const translations: Record<Language, Record<string, string>> = {
         defaultSnoozePrice: '💰 Alapértelmezett szundi ár',
         defaultSnoozePriceSubtitle: 'Új ébresztők ezt az árat használják',
         defaultSnoozeDuration: '⏱️ Alapértelmezett szundi idő',
+        colorTheme: '🎨 Színtéma',
+        themeMidnight: 'Éjfél',
+        themeOcean: 'Óceán',
+        themeForest: 'Erdő',
+        themeSunset: 'Naplemente',
 
         // Profile screen
         sleepyhead: 'Álomszuszék',
@@ -231,6 +241,11 @@ const translations: Record<Language, Record<string, string>> = {
         defaultSnoozePrice: '💰 Precio Snooze por defecto',
         defaultSnoozePriceSubtitle: 'Las nuevas alarmas usarán este precio',
         defaultSnoozeDuration: '⏱️ Duración Snooze por defecto',
+        colorTheme: '🎨 Tema de Color',
+        themeMidnight: 'Medianoche',
+        themeOcean: 'Océano',
+        themeForest: 'Bosque',
+        themeSunset: 'Atardecer',
 
         // Profile screen
         sleepyhead: 'Dormilón',
@@ -316,6 +331,11 @@ const translations: Record<Language, Record<string, string>> = {
         defaultSnoozePrice: '💰 Standard-Schlummerpreis',
         defaultSnoozePriceSubtitle: 'Neue Wecker verwenden diesen Preis',
         defaultSnoozeDuration: '⏱️ Standard-Schlummerdauer',
+        colorTheme: '🎨 Farbthema',
+        themeMidnight: 'Mitternacht',
+        themeOcean: 'Ozean',
+        themeForest: 'Wald',
+        themeSunset: 'Sonnenuntergang',
 
         // Profile screen
         sleepyhead: 'Schlafmütze',

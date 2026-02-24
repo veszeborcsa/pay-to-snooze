@@ -12,6 +12,7 @@ import {
     NativeScrollEvent,
 } from 'react-native';
 import { useTranslation } from '../hooks/useTranslation';
+import { useTheme } from '../theme/theme';
 
 const ITEM_HEIGHT = 54;
 const VISIBLE_ITEMS = 5;
@@ -31,11 +32,19 @@ function WheelColumn({
     initialValue,
     onValueChange,
     label,
+    accentColor,
+    textPrimaryColor,
+    textMutedColor,
+    cardColor,
 }: {
     count: number; // 24 for hours, 60 for minutes
     initialValue: number;
     onValueChange: (value: number) => void;
     label: string;
+    accentColor: string;
+    textPrimaryColor: string;
+    textMutedColor: string;
+    cardColor: string;
 }) {
     const scrollRef = useRef<ScrollView>(null);
     const [currentValue, setCurrentValue] = useState(initialValue);
@@ -91,11 +100,11 @@ function WheelColumn({
 
     return (
         <View style={styles.wheelColumn}>
-            <Text style={styles.wheelLabel}>{label}</Text>
-            <View style={styles.wheelContainer}>
+            <Text style={[styles.wheelLabel, { color: textMutedColor }]}>{label}</Text>
+            <View style={[styles.wheelContainer, { backgroundColor: cardColor }]}>
                 {/* Fixed selection highlight */}
                 <View style={styles.selectionOverlay} pointerEvents="none">
-                    <View style={styles.selectionHighlight} />
+                    <View style={[styles.selectionHighlight, { backgroundColor: `${accentColor}26`, borderColor: accentColor }]} />
                 </View>
                 <ScrollView
                     ref={scrollRef}
@@ -121,7 +130,8 @@ function WheelColumn({
                                 <Text
                                     style={[
                                         styles.wheelItemText,
-                                        isCenter && styles.wheelItemTextSelected,
+                                        { color: textMutedColor },
+                                        isCenter && [styles.wheelItemTextSelected, { color: textPrimaryColor }],
                                         !isCenter && distance === 1 && styles.wheelItemTextNear,
                                         !isCenter && distance >= 2 && styles.wheelItemTextFar,
                                         item === null && { color: 'transparent' },
@@ -142,6 +152,7 @@ export default function TimePicker({ visible, hours, minutes, onConfirm, onCance
     const [selectedHour, setSelectedHour] = useState(parseInt(hours) || 0);
     const [selectedMinute, setSelectedMinute] = useState(parseInt(minutes) || 0);
     const { t } = useTranslation();
+    const theme = useTheme();
 
     // Reset when modal opens with new values
     useEffect(() => {
@@ -166,8 +177,8 @@ export default function TimePicker({ visible, hours, minutes, onConfirm, onCance
             onRequestClose={onCancel}
         >
             <View style={styles.overlay}>
-                <View style={styles.modal}>
-                    <Text style={styles.modalTitle}>{t.setTime}</Text>
+                <View style={[styles.modal, { backgroundColor: theme.background, borderColor: theme.secondary }]}>
+                    <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>{t.setTime}</Text>
 
                     <View style={styles.pickerRow}>
                         {visible && (
@@ -177,29 +188,37 @@ export default function TimePicker({ visible, hours, minutes, onConfirm, onCance
                                     initialValue={parseInt(hours) || 0}
                                     onValueChange={setSelectedHour}
                                     label={t.hour}
+                                    accentColor={theme.accent}
+                                    textPrimaryColor={theme.textPrimary}
+                                    textMutedColor={theme.textMuted}
+                                    cardColor={theme.card}
                                 />
-                                <Text style={styles.pickerSeparator}>:</Text>
+                                <Text style={[styles.pickerSeparator, { color: theme.accent }]}>:</Text>
                                 <WheelColumn
                                     count={60}
                                     initialValue={parseInt(minutes) || 0}
                                     onValueChange={setSelectedMinute}
                                     label={t.minute}
+                                    accentColor={theme.accent}
+                                    textPrimaryColor={theme.textPrimary}
+                                    textMutedColor={theme.textMuted}
+                                    cardColor={theme.card}
                                 />
                             </>
                         )}
                     </View>
 
                     {/* Preview */}
-                    <Text style={styles.previewTime}>
+                    <Text style={[styles.previewTime, { color: theme.accent }]}>
                         {String(selectedHour).padStart(2, '0')}:{String(selectedMinute).padStart(2, '0')}
                     </Text>
 
                     <View style={styles.buttonRow}>
-                        <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                            <Text style={styles.cancelButtonText}>{t.cancel}</Text>
+                        <TouchableOpacity style={[styles.cancelButton, { backgroundColor: theme.secondary }]} onPress={onCancel}>
+                            <Text style={[styles.cancelButtonText, { color: theme.textMuted }]}>{t.cancel}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-                            <Text style={styles.confirmButtonText}>{t.set}</Text>
+                        <TouchableOpacity style={[styles.confirmButton, { backgroundColor: theme.accent }]} onPress={handleConfirm}>
+                            <Text style={[styles.confirmButtonText, { color: theme.textPrimary }]}>{t.set}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -216,18 +235,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modal: {
-        backgroundColor: '#1a1a2e',
         borderRadius: 24,
         padding: 24,
         width: Math.min(Dimensions.get('window').width - 48, 360),
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2a2a4e',
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: '700',
-        color: '#fff',
         marginBottom: 20,
     },
     pickerRow: {
@@ -238,7 +254,6 @@ const styles = StyleSheet.create({
     pickerSeparator: {
         fontSize: 40,
         fontWeight: 'bold',
-        color: '#4a9f7f',
         marginHorizontal: 8,
         marginTop: 28,
     },
@@ -247,7 +262,6 @@ const styles = StyleSheet.create({
     },
     wheelLabel: {
         fontSize: 13,
-        color: '#888',
         marginBottom: 8,
         fontWeight: '600',
     },
@@ -256,7 +270,6 @@ const styles = StyleSheet.create({
         width: 88,
         overflow: 'hidden',
         borderRadius: 12,
-        backgroundColor: '#16213e',
     },
     selectionOverlay: {
         position: 'absolute',
@@ -269,10 +282,8 @@ const styles = StyleSheet.create({
     },
     selectionHighlight: {
         height: ITEM_HEIGHT,
-        backgroundColor: 'rgba(74, 159, 127, 0.15)',
         borderTopWidth: 2,
         borderBottomWidth: 2,
-        borderColor: '#4a9f7f',
         borderRadius: 8,
         marginHorizontal: 4,
     },
@@ -282,26 +293,21 @@ const styles = StyleSheet.create({
     },
     wheelItemText: {
         fontSize: 22,
-        color: '#555',
         fontWeight: '500',
     },
     wheelItemTextSelected: {
         fontSize: 30,
-        color: '#fff',
         fontWeight: '700',
     },
     wheelItemTextNear: {
         fontSize: 20,
-        color: '#888',
     },
     wheelItemTextFar: {
         fontSize: 16,
-        color: '#444',
     },
     previewTime: {
         fontSize: 48,
         fontWeight: '700',
-        color: '#4a9f7f',
         marginVertical: 16,
         letterSpacing: 4,
     },
@@ -314,24 +320,20 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 14,
         borderRadius: 12,
-        backgroundColor: '#2a2a4e',
         alignItems: 'center',
     },
     cancelButtonText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#888',
     },
     confirmButton: {
         flex: 1,
         paddingVertical: 14,
         borderRadius: 12,
-        backgroundColor: '#4a9f7f',
         alignItems: 'center',
     },
     confirmButtonText: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#fff',
     },
 });

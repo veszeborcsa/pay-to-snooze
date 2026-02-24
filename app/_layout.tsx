@@ -7,6 +7,7 @@ import { requestNotificationPermissions } from '../services/notifications';
 import { useAlarmChecker } from '../hooks/useAlarmChecker';
 import { useTranslation } from '../hooks/useTranslation';
 import { SettingsProvider } from '../context/SettingsContext';
+import { useTheme } from '../theme/theme';
 
 function InnerLayout() {
   const router = useRouter();
@@ -17,6 +18,7 @@ function InnerLayout() {
   useAlarmChecker();
 
   const { t } = useTranslation();
+  const theme = useTheme();
 
   return (
     <>
@@ -24,14 +26,14 @@ function InnerLayout() {
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#1a1a2e',
+            backgroundColor: theme.background,
           },
-          headerTintColor: '#fff',
+          headerTintColor: theme.textPrimary,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
           contentStyle: {
-            backgroundColor: '#16213e',
+            backgroundColor: theme.card,
           },
         }}
       >

@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 
 import { useRouter } from 'expo-router';
 import { useSettings } from '../hooks/useAlarms';
 import { useTranslation } from '../hooks/useTranslation';
+import { useTheme, themeNames, getTheme, ThemeName } from '../theme/theme';
 
 const DURATION_PRESETS = [1, 5, 10, 15];
 const LANGUAGES = [
@@ -13,10 +14,18 @@ const LANGUAGES = [
     { code: 'de', label: 'Deutsch' },
 ];
 
+const THEME_TRANSLATION_KEYS: Record<ThemeName, string> = {
+    midnight: 'themeMidnight',
+    ocean: 'themeOcean',
+    forest: 'themeForest',
+    sunset: 'themeSunset',
+};
+
 export default function SettingsScreen() {
     const router = useRouter();
     const { settings, updateSettings } = useSettings();
     const { t, dayNames } = useTranslation();
+    const theme = useTheme();
     const [showCustomDuration, setShowCustomDuration] = useState(false);
     const [customDuration, setCustomDuration] = useState('');
 
@@ -39,8 +48,8 @@ export default function SettingsScreen() {
 
     if (!settings) {
         return (
-            <View style={styles.container}>
-                <Text style={styles.loadingText}>{t.loading}</Text>
+            <View style={[styles.container, { backgroundColor: theme.card }]}>
+                <Text style={[styles.loadingText, { color: theme.textMuted }]}>{t.loading}</Text>
             </View>
         );
     }
@@ -48,23 +57,62 @@ export default function SettingsScreen() {
     const selectedLanguage = settings.language || 'en';
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScrollView style={[styles.container, { backgroundColor: theme.card }]} contentContainerStyle={styles.content}>
+            {/* Color Theme */}
+            <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.colorTheme}</Text>
+                <View style={styles.themeContainer}>
+                    {themeNames.map((name) => {
+                        const previewTheme = getTheme(name);
+                        const isActive = (settings.colorTheme || 'midnight') === name;
+                        return (
+                            <TouchableOpacity
+                                key={name}
+                                style={[
+                                    styles.themeOption,
+                                    { borderColor: isActive ? previewTheme.accent : theme.secondary },
+                                    isActive && { borderWidth: 2 },
+                                ]}
+                                onPress={() => updateSettings({ colorTheme: name })}
+                            >
+                                <View style={styles.themePreview}>
+                                    <View style={[styles.themeColorDot, { backgroundColor: previewTheme.background }]} />
+                                    <View style={[styles.themeColorDot, { backgroundColor: previewTheme.card }]} />
+                                    <View style={[styles.themeColorDot, { backgroundColor: previewTheme.accent }]} />
+                                </View>
+                                <Text style={[
+                                    styles.themeLabel,
+                                    { color: isActive ? previewTheme.accent : theme.textMuted }
+                                ]}>
+                                    {(t as any)[THEME_TRANSLATION_KEYS[name]] || name}
+                                </Text>
+                                {isActive && (
+                                    <Text style={[styles.themeCheck, { color: previewTheme.accent }]}>✓</Text>
+                                )}
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+            </View>
+
             {/* Language */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.language}</Text>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.language}</Text>
                 <View style={styles.languageContainer}>
                     {LANGUAGES.map((lang) => (
                         <TouchableOpacity
                             key={lang.code}
                             style={[
                                 styles.languageButton,
-                                selectedLanguage === lang.code && styles.languageButtonActive
+                                { backgroundColor: theme.background, borderColor: theme.secondary },
+                                selectedLanguage === lang.code && { backgroundColor: theme.accent, borderColor: theme.accent }
                             ]}
                             onPress={() => updateSettings({ language: lang.code })}
                         >
                             <Text style={[
                                 styles.languageText,
-                                selectedLanguage === lang.code && styles.languageTextActive
+                                { color: theme.textMuted },
+                                selectedLanguage === lang.code && { color: theme.textPrimary }
                             ]}>
                                 {lang.label}
                             </Text>
@@ -75,20 +123,22 @@ export default function SettingsScreen() {
 
             {/* Start Day of Week */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.weekStartsOn}</Text>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.weekStartsOn}</Text>
                 <View style={styles.languageContainer}>
                     {dayNames.map((day, index) => (
                         <TouchableOpacity
                             key={day}
                             style={[
                                 styles.startDayButton,
-                                settings.startDayOfWeek === index && styles.startDayButtonActive
+                                { backgroundColor: theme.background, borderColor: theme.secondary },
+                                settings.startDayOfWeek === index && { backgroundColor: theme.accent, borderColor: theme.accent }
                             ]}
                             onPress={() => updateSettings({ startDayOfWeek: index })}
                         >
                             <Text style={[
                                 styles.startDayText,
-                                settings.startDayOfWeek === index && styles.startDayTextActive
+                                { color: theme.textMuted },
+                                settings.startDayOfWeek === index && { color: theme.textPrimary }
                             ]}>
                                 {day}
                             </Text>
@@ -99,12 +149,12 @@ export default function SettingsScreen() {
 
             {/* Default Snooze Price */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.defaultSnoozePrice}</Text>
-                <Text style={styles.sectionSubtitle}>{t.defaultSnoozePriceSubtitle}</Text>
-                <View style={styles.priceContainer}>
-                    <Text style={styles.currencySign}>$</Text>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.defaultSnoozePrice}</Text>
+                <Text style={[styles.sectionSubtitle, { color: theme.textMuted }]}>{t.defaultSnoozePriceSubtitle}</Text>
+                <View style={[styles.priceContainer, { backgroundColor: theme.background, borderColor: theme.secondary }]}>
+                    <Text style={[styles.currencySign, { color: theme.danger }]}>$</Text>
                     <TextInput
-                        style={styles.priceInput}
+                        style={[styles.priceInput, { color: theme.textPrimary }]}
                         value={settings.defaultSnoozePrice.toString()}
                         onChangeText={(text) => {
                             const price = parseFloat(text) || 1;
@@ -112,37 +162,47 @@ export default function SettingsScreen() {
                         }}
                         keyboardType="decimal-pad"
                         placeholder="1.00"
-                        placeholderTextColor="#666"
+                        placeholderTextColor={theme.textMuted}
                     />
                 </View>
             </View>
 
             {/* Default Snooze Duration */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.defaultSnoozeDuration}</Text>
+                <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>{t.defaultSnoozeDuration}</Text>
                 <View style={styles.durationContainer}>
                     {DURATION_PRESETS.map((min) => (
                         <TouchableOpacity
                             key={min}
                             style={[
                                 styles.durationButton,
-                                settings.defaultSnoozeDuration === min && !showCustomDuration && styles.durationButtonActive
+                                { backgroundColor: theme.background, borderColor: theme.secondary },
+                                settings.defaultSnoozeDuration === min && !showCustomDuration && { backgroundColor: theme.accent, borderColor: theme.accent }
                             ]}
                             onPress={() => selectPresetDuration(min)}
                         >
                             <Text style={[
                                 styles.durationText,
-                                settings.defaultSnoozeDuration === min && !showCustomDuration && styles.durationTextActive
+                                { color: theme.textMuted },
+                                settings.defaultSnoozeDuration === min && !showCustomDuration && { color: theme.textPrimary }
                             ]}>
                                 {min} {t.min}
                             </Text>
                         </TouchableOpacity>
                     ))}
                     <TouchableOpacity
-                        style={[styles.durationButton, showCustomDuration && styles.durationButtonActive]}
+                        style={[
+                            styles.durationButton,
+                            { backgroundColor: theme.background, borderColor: theme.secondary },
+                            showCustomDuration && { backgroundColor: theme.accent, borderColor: theme.accent }
+                        ]}
                         onPress={selectCustomDuration}
                     >
-                        <Text style={[styles.durationText, showCustomDuration && styles.durationTextActive]}>
+                        <Text style={[
+                            styles.durationText,
+                            { color: theme.textMuted },
+                            showCustomDuration && { color: theme.textPrimary }
+                        ]}>
                             {t.other}
                         </Text>
                     </TouchableOpacity>
@@ -150,15 +210,15 @@ export default function SettingsScreen() {
                 {showCustomDuration && (
                     <View style={styles.customDurationContainer}>
                         <TextInput
-                            style={styles.customDurationInput}
+                            style={[styles.customDurationInput, { backgroundColor: theme.background, color: theme.textPrimary, borderColor: theme.accent }]}
                             value={customDuration}
                             onChangeText={handleCustomDurationChange}
                             keyboardType="number-pad"
                             placeholder={t.enterMinutes}
-                            placeholderTextColor="#666"
+                            placeholderTextColor={theme.textMuted}
                             autoFocus
                         />
-                        <Text style={styles.customDurationLabel}>{t.minutes}</Text>
+                        <Text style={[styles.customDurationLabel, { color: theme.textMuted }]}>{t.minutes}</Text>
                     </View>
                 )}
             </View>
@@ -169,61 +229,15 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#16213e',
     },
     content: {
         padding: 24,
         paddingBottom: 48,
     },
     loadingText: {
-        color: '#888',
         fontSize: 16,
         textAlign: 'center',
         marginTop: 40,
-    },
-    profileLink: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#1a1a2e',
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 28,
-        borderWidth: 1,
-        borderColor: '#2a2a4e',
-    },
-    profileLinkLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-    },
-    profileAvatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: '#16213e',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#4a9f7f',
-    },
-    profileAvatarEmoji: {
-        fontSize: 24,
-    },
-    profileName: {
-        fontSize: 17,
-        fontWeight: '600',
-        color: '#fff',
-    },
-    profileSubtext: {
-        fontSize: 13,
-        color: '#888',
-        marginTop: 2,
-    },
-    profileArrow: {
-        fontSize: 28,
-        color: '#4a9f7f',
-        fontWeight: '300',
     },
     section: {
         marginBottom: 24,
@@ -231,13 +245,45 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#fff',
         marginBottom: 4,
     },
     sectionSubtitle: {
         fontSize: 12,
-        color: '#888',
         marginBottom: 12,
+    },
+    themeContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 10,
+        marginTop: 8,
+    },
+    themeOption: {
+        flex: 1,
+        minWidth: 70,
+        paddingVertical: 12,
+        paddingHorizontal: 8,
+        borderRadius: 12,
+        borderWidth: 1,
+        alignItems: 'center',
+    },
+    themePreview: {
+        flexDirection: 'row',
+        gap: 4,
+        marginBottom: 6,
+    },
+    themeColorDot: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+    },
+    themeLabel: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    themeCheck: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginTop: 2,
     },
     languageContainer: {
         flexDirection: 'row',
@@ -250,63 +296,39 @@ const styles = StyleSheet.create({
         minWidth: 70,
         paddingVertical: 14,
         borderRadius: 12,
-        backgroundColor: '#1a1a2e',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2a2a4e',
-    },
-    languageButtonActive: {
-        backgroundColor: '#4a9f7f',
-        borderColor: '#4a9f7f',
     },
     languageText: {
         fontSize: 14,
-        color: '#888',
         fontWeight: '600',
-    },
-    languageTextActive: {
-        color: '#fff',
     },
     startDayButton: {
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: '#1a1a2e',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2a2a4e',
-    },
-    startDayButtonActive: {
-        backgroundColor: '#4a9f7f',
-        borderColor: '#4a9f7f',
     },
     startDayText: {
         fontSize: 11,
-        color: '#888',
         fontWeight: '600',
-    },
-    startDayTextActive: {
-        color: '#fff',
     },
     priceContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#1a1a2e',
         borderRadius: 12,
         paddingHorizontal: 16,
         borderWidth: 1,
-        borderColor: '#2a2a4e',
     },
     currencySign: {
         fontSize: 24,
-        color: '#e74c3c',
         fontWeight: 'bold',
     },
     priceInput: {
         flex: 1,
         fontSize: 24,
-        color: '#fff',
         padding: 16,
     },
     durationContainer: {
@@ -321,22 +343,12 @@ const styles = StyleSheet.create({
         minWidth: 50,
         paddingVertical: 14,
         borderRadius: 12,
-        backgroundColor: '#1a1a2e',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#2a2a4e',
-    },
-    durationButtonActive: {
-        backgroundColor: '#4a9f7f',
-        borderColor: '#4a9f7f',
     },
     durationText: {
         fontSize: 14,
-        color: '#888',
         fontWeight: '600',
-    },
-    durationTextActive: {
-        color: '#fff',
     },
     customDurationContainer: {
         flexDirection: 'row',
@@ -346,17 +358,13 @@ const styles = StyleSheet.create({
     },
     customDurationInput: {
         flex: 1,
-        backgroundColor: '#1a1a2e',
         borderRadius: 12,
         padding: 14,
         fontSize: 18,
-        color: '#fff',
         borderWidth: 1,
-        borderColor: '#4a9f7f',
         textAlign: 'center',
     },
     customDurationLabel: {
         fontSize: 16,
-        color: '#888',
     },
 });

@@ -15,12 +15,14 @@ import { scheduleSnoozeNotification } from '../services/notifications';
 import { addSnoozeSpending } from '../store/alarmStore';
 import { scheduleWebSnooze } from '../hooks/useAlarmChecker';
 import { useTranslation } from '../hooks/useTranslation';
+import { useTheme } from '../theme/theme';
 
 const { width } = Dimensions.get('window');
 
 export default function RingingScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const theme = useTheme();
 
     const alarmId = (params.alarmId as string) || 'demo';
     const label = (params.label as string) || 'Wake Up!';
@@ -117,11 +119,11 @@ export default function RingingScreen() {
 
     const glowColor = glowAnim.interpolate({
         inputRange: [0, 1],
-        outputRange: ['rgba(231, 76, 60, 0.2)', 'rgba(231, 76, 60, 0.6)'],
+        outputRange: [`${theme.danger}33`, `${theme.danger}99`],
     });
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
             <Animated.View
                 style={[styles.glowBackground, { backgroundColor: glowColor }]}
             />
@@ -133,20 +135,20 @@ export default function RingingScreen() {
                     ⏰
                 </Animated.Text>
 
-                <Text style={styles.time}>{getCurrentTime()}</Text>
-                <Text style={styles.label}>{label}</Text>
+                <Text style={[styles.time, { color: theme.textPrimary }]}>{getCurrentTime()}</Text>
+                <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
 
                 <View style={styles.buttonsContainer}>
                     {/* Snooze Button */}
-                    <TouchableOpacity style={styles.snoozeButton} onPress={handleSnooze}>
-                        <Text style={styles.snoozePrice}>${snoozePrice.toFixed(2)}</Text>
+                    <TouchableOpacity style={[styles.snoozeButton, { backgroundColor: theme.danger, shadowColor: theme.danger }]} onPress={handleSnooze}>
+                        <Text style={[styles.snoozePrice, { color: theme.textPrimary }]}>${snoozePrice.toFixed(2)}</Text>
                         <Text style={styles.snoozeText}>{t.snoozeMin.replace('{0}', String(snoozeDuration))}</Text>
                         <Text style={styles.snoozeSubtext}>{t.payToSnooze}</Text>
                     </TouchableOpacity>
 
                     {/* Dismiss Button */}
-                    <TouchableOpacity style={styles.dismissButton} onPress={handleDismiss}>
-                        <Text style={styles.dismissText}>{t.imAwake}</Text>
+                    <TouchableOpacity style={[styles.dismissButton, { backgroundColor: theme.accent }]} onPress={handleDismiss}>
+                        <Text style={[styles.dismissText, { color: theme.textPrimary }]}>{t.imAwake}</Text>
                         <Text style={styles.dismissSubtext}>{t.free}</Text>
                     </TouchableOpacity>
                 </View>
@@ -158,7 +160,6 @@ export default function RingingScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a2e',
     },
     glowBackground: {
         ...StyleSheet.absoluteFillObject,
@@ -176,12 +177,10 @@ const styles = StyleSheet.create({
     time: {
         fontSize: 64,
         fontWeight: '200',
-        color: '#fff',
         letterSpacing: 4,
     },
     label: {
         fontSize: 24,
-        color: '#9999aa',
         marginTop: 8,
         marginBottom: 60,
     },
@@ -190,12 +189,10 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     snoozeButton: {
-        backgroundColor: '#e74c3c',
         borderRadius: 20,
         padding: 24,
         alignItems: 'center',
         elevation: 8,
-        shadowColor: '#e74c3c',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.5,
         shadowRadius: 12,
@@ -203,7 +200,6 @@ const styles = StyleSheet.create({
     snoozePrice: {
         fontSize: 48,
         fontWeight: 'bold',
-        color: '#fff',
     },
     snoozeText: {
         fontSize: 18,
@@ -216,7 +212,6 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     dismissButton: {
-        backgroundColor: '#4a9f7f',
         borderRadius: 20,
         padding: 20,
         alignItems: 'center',
@@ -224,7 +219,6 @@ const styles = StyleSheet.create({
     dismissText: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#fff',
     },
     dismissSubtext: {
         fontSize: 14,
